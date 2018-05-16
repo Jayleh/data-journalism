@@ -24,7 +24,7 @@ let csvPath = '../data/data.csv';
 d3.csv(csvPath, (error, healthData) => {
     if (error) throw error;
 
-    console.log(healthData);
+    // console.log(healthData);
 
     // Parse data, cast as numbers
     healthData.forEach(data => {
@@ -41,19 +41,19 @@ d3.csv(csvPath, (error, healthData) => {
     // Create domain functions for dynamic variables
     // let xMin, xMax, yMin, yMax;
     let xExtent, yExtent;
-    let xTestExtent = d3.extent(healthData, data => data.age_25_34);
+    let xTestExtent = d3.extent(healthData, data => data.median_income);
     let yTestExtent = d3.extent(healthData, data => data.physically_active);
 
     function xGetMinMax(xDataField) {
         // xMin = d3.min(healthData, data => data.xDataField);
         // xMax = d3.max(healthData, data => data.xDataField);
-        xExtent = d3.extent(healthData, data => data.xDataField);
+        xExtent = d3.extent(healthData, data => data[xDataField]);
     }
 
     function yGetMinMax(yDataField) {
         // yMin = d3.min(healthData, data => data.yDataField);
         // yMax = d3.max(healthData, data => data.yDataField);
-        yExtent = d3.extent(healthData, data => data.yDataField);
+        yExtent = d3.extent(healthData, data => data[yDataField]);
     }
 
     // Create scale functions
@@ -72,17 +72,19 @@ d3.csv(csvPath, (error, healthData) => {
     // Generate axes groups
     chartGroup.append('g')
         .attr('transform', `translate(0, ${chartHeight})`)
+        .attr('id', 'x-axis')
         .call(bottomAxis);
 
     chartGroup.append('g')
+        .attr('id', 'y-axis')
         .call(leftAxis);
 
     // Create axes values lists
-    let xValues = ['age_25_34', 'median_income', 'median_income', 'poverty', 'unemployed_greater_year'];
+    let xValues = ['median_income', 'age_25_34', 'poverty', 'unemployed_greater_year'];
     let yValues = ['physically_active', 'binge_drink', 'smoke', 'own_home'];
 
     // Create axes labels lists
-    let xLabels = ['Age (25-34)', 'Income (Median)', 'Poverty', 'Unemployed (>1 year)'];
+    let xLabels = ['Income (Median)', 'Age (25-34)', 'Poverty', 'Unemployed (>1 year)'];
     let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
 
     // Append x-axis labels
@@ -106,6 +108,10 @@ d3.csv(csvPath, (error, healthData) => {
             .text(yLabels[i]);
     }
 
+    // Select all x and y axes text, assign to variables
+    let $xAxisLabel = d3.selectAll('.x-axis-text').classed('inactive', true);
+    let $yAxisLabel = d3.selectAll('.y-axis-text').classed('inactive', true);
+
     // Create default plot
     function createDefault() {
         let $circleGroup = chartGroup.selectAll('circle')
@@ -117,24 +123,28 @@ d3.csv(csvPath, (error, healthData) => {
             .data(healthData)
             .enter()
             .append('circle')
-            .attr('cx', data => xLinearScale(data.age_25_34))
+            .attr('cx', data => xLinearScale(data.median_income))
             .attr('cy', data => yLinearScale(data.physically_active))
             .attr('r', '15')
             .attr('fill', 'blue')
             .attr('opacity', '0.7');
+
+        $xAxisLabel.classed('inactive', true);
+        $yAxisLabel.classed('inactive', true);
+
+        d3.select(`.x-axis-text[value='median_income']`)
+            .classed('inactive', false)
+            .classed('active', true);
+
+        d3.select(`.y-axis-text[value='physically_active']`)
+            .classed('inactive', false)
+            .classed('active', true);
     }
 
+    // Generate default plot
     createDefault();
 
-    // Generate circle group
-    function warp(variable) {
-        console.log(variable);
-    }
-
     // Change x axis text activity
-    // function xRestyleText() {
-    let $xAxisLabel = d3.selectAll('.x-axis-text');
-
     $xAxisLabel.on('click', function () {
 
         $xAxisLabel.filter('.active')
@@ -142,13 +152,65 @@ d3.csv(csvPath, (error, healthData) => {
             .classed('inactive', true);
 
         let $clickedField = d3.select(this);
-
-        // console.log($clickedField);
+        let $clickedFieldValue = $clickedField.attr('value');
+        console.log($clickedFieldValue);
 
         $clickedField
             .classed('inactive', false)
             .classed('active', true);
+
+        xGetMinMax($clickedFieldValue);
+        console.log(xExtent);
+
+        xLinearScale.domain(xExtent);
+
+        $svg.select("#x-axis")
+            .transition()
+            .duration(1000)
+            .ease(d3.easeElastic)
+            .call(bottomAxis);
+
+
+        let $circleGroup = chartGroup.selectAll('circle');
+
+        $circleGroup
+            .transition()
+            .duration(1000)
+            .attr('cx', data => xLinearScale(data[$clickedFieldValue]));
     });
-    // }
+
+    // Change y axis text activity
+    $yAxisLabel.on('click', function () {
+
+        $yAxisLabel.filter('.active')
+            .classed('active', false)
+            .classed('inactive', true);
+
+        let $clickedField = d3.select(this);
+        let $clickedFieldValue = $clickedField.attr('value');
+        console.log($clickedFieldValue);
+
+        $clickedField
+            .classed('inactive', false)
+            .classed('active', true);
+
+        yGetMinMax($clickedFieldValue);
+        console.log(yExtent);
+
+        yLinearScale.domain(yExtent);
+
+        $svg.select("#y-axis")
+            .transition()
+            .duration(1000)
+            .ease(d3.easeElastic)
+            .call(leftAxis);
+
+        let $circleGroup = chartGroup.selectAll('circle');
+
+        $circleGroup
+            .transition()
+            .duration(1000)
+            .attr('cy', data => yLinearScale(data[$clickedFieldValue]));
+    });
 
 });
