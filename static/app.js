@@ -77,7 +77,11 @@ d3.csv(csvPath, (error, healthData) => {
     chartGroup.append('g')
         .call(leftAxis);
 
-    // Create axes labesls
+    // Create axes values lists
+    let xValues = ['age_25_34', 'median_income', 'median_income', 'poverty', 'unemployed_greater_year'];
+    let yValues = ['physically_active', 'binge_drink', 'smoke', 'own_home'];
+
+    // Create axes labels lists
     let xLabels = ['Age (25-34)', 'Income (Median)', 'Poverty', 'Unemployed (>1 year)'];
     let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
 
@@ -85,9 +89,8 @@ d3.csv(csvPath, (error, healthData) => {
     for (let i = 0, ii = xLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
         chartGroup.append('text')
             .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + spacer})`)
-            .attr('class', 'axisText')
-            .attr('value', xLabels[i])
-            .attr('onchange', 'warp(this.value)')
+            .attr('class', 'axis-text x-axis-text')
+            .attr('value', xValues[i])
             .text(xLabels[i]);
     }
 
@@ -98,16 +101,19 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('y', 0 - margin.left + 20 + spacer)
             .attr('x', 0 - (chartHeight / 2))
             .attr('dy', '1em')
-            .attr('class', 'axisText')
-            .attr('value', yLabels[i])
-            .attr('onchange', 'warp(this.value)')
+            .attr('class', 'axis-text y-axis-text')
+            .attr('value', yValues[i])
             .text(yLabels[i]);
     }
 
-    let defaultVariable;
+    // Create default plot
+    function createDefault() {
+        let $circleGroup = chartGroup.selectAll('circle')
 
-    function createChart() {
-        let circleGroup = chartGroup.selectAll('circle')
+        // Remove all circles (if any)
+        // $circleGroup.remove()
+
+        $circleGroup
             .data(healthData)
             .enter()
             .append('circle')
@@ -118,11 +124,31 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('opacity', '0.7');
     }
 
-    createChart();
+    createDefault();
 
     // Generate circle group
     function warp(variable) {
-
+        console.log(variable);
     }
+
+    // Change x axis text activity
+    // function xRestyleText() {
+    let $xAxisLabel = d3.selectAll('.x-axis-text');
+
+    $xAxisLabel.on('click', function () {
+
+        $xAxisLabel.filter('.active')
+            .classed('active', false)
+            .classed('inactive', true);
+
+        let $clickedField = d3.select(this);
+
+        // console.log($clickedField);
+
+        $clickedField
+            .classed('inactive', false)
+            .classed('active', true);
+    });
+    // }
 
 });
