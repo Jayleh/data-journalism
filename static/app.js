@@ -2,10 +2,10 @@ let svgWidth = 960;
 let svgHeight = 600;
 
 let margin = {
-    top: 20,
+    top: 45,
     right: 30,
     bottom: 130,
-    left: 100
+    left: 130
 };
 
 let chartWidth = svgWidth - margin.left - margin.right;
@@ -81,34 +81,48 @@ d3.csv(csvPath, (error, healthData) => {
     let xLabels = ['Age (25-34)', 'Income (Median)', 'Poverty', 'Unemployed (>1 year)'];
     let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
 
-    let xTestLabel = 'Age (25-34)';
-    let yTestLabel = 'Physically Active';
-
+    // Append x-axis labels
     for (let i = 0, ii = xLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
-        // Append x-axis label
         chartGroup.append('text')
-            .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + 30 + spacer})`)
+            .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + spacer})`)
             .attr('class', 'axisText')
+            .attr('value', xLabels[i])
+            .attr('onchange', 'warp(this.value)')
             .text(xLabels[i]);
     }
 
-    // Append y-axis label
-    chartGroup.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('y', 0 - margin.left + 20)
-        .attr('x', 0 - (chartHeight / 2))
-        .attr('dy', '1em')
-        .attr('class', 'axisText')
-        .text(yTestLabel);
+    // Append y-axis labels
+    for (let i = 0, ii = yLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
+        chartGroup.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 0 - margin.left + 20 + spacer)
+            .attr('x', 0 - (chartHeight / 2))
+            .attr('dy', '1em')
+            .attr('class', 'axisText')
+            .attr('value', yLabels[i])
+            .attr('onchange', 'warp(this.value)')
+            .text(yLabels[i]);
+    }
+
+    let defaultVariable;
+
+    function createChart() {
+        let circleGroup = chartGroup.selectAll('circle')
+            .data(healthData)
+            .enter()
+            .append('circle')
+            .attr('cx', data => xLinearScale(data.age_25_34))
+            .attr('cy', data => yLinearScale(data.physically_active))
+            .attr('r', '15')
+            .attr('fill', 'blue')
+            .attr('opacity', '0.7');
+    }
+
+    createChart();
 
     // Generate circle group
-    let circleGroup = chartGroup.selectAll('circle')
-        .data(healthData)
-        .enter()
-        .append('circle')
-        .attr('cx', data => xLinearScale(data.age_25_34))
-        .attr('cy', data => yLinearScale(data.physically_active))
-        .attr('r', '15')
-        .attr('fill', 'blue')
-        .attr('opacity', '0.7');
+    function warp(variable) {
+
+    }
+
 });
