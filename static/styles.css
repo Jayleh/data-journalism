@@ -25,12 +25,12 @@ body{
 
 .active {
   font-weight: 900;
-  fill: #F1574D;
+  fill: rgb(250, 70, 70);
 }
 
 .inactive {
   font-weight: lighter;
-  fill: #10325D;
+  fill: rgb(121, 143, 172);
 }
 
 /* .axis-text-main{
