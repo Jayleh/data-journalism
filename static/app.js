@@ -1,5 +1,5 @@
 let svgWidth = 960;
-let svgHeight = 600;
+let svgHeight = 635;
 
 let margin = {
     top: 45,
@@ -19,9 +19,9 @@ let $svg = d3.select('#plot')
 let $chartGroup = $svg.append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-let csvPath = '../data/data.csv';
+let url = '/data';
 
-d3.csv(csvPath, (error, healthData) => {
+d3.json(url, (error, healthData) => {
     if (error) throw error;
 
     // console.log(healthData);
@@ -144,6 +144,16 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('r', '15')
             .attr('fill', 'rgb(75, 133, 142)')
             .attr('opacity', '0.8');
+
+        // let $circleTextGroup = $chartGroup.selectAll('text');
+
+        // $circleTextGroup
+        //     .data(healthData)
+        //     .enter()
+        //     .append('text')
+        //     .attr('x', data => xLinearScale(data.median_income))
+        //     .attr('y', data => yLinearScale(data.physically_active))
+        //     .text(data => data.abbrev);
 
         updateTooltip();
     }
