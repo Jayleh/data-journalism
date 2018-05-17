@@ -1,0 +1,43 @@
+body{
+    font-size: 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  
+  /* .axis-text-x {
+    fill: #10325D;
+    text-anchor: middle;
+  }
+    
+  .axis-text-y {
+    fill: #10325D;
+    text-anchor: middle;
+  } */
+
+  .axis-text {
+    transition: fill 0.5s ease-out;
+    text-anchor: middle;
+  }
+  
+  .active {
+    font-weight: 900;
+    fill: #F1574D;
+  }
+  
+  .inactive {
+    font-weight: lighter;
+    fill: #10325D;
+  }
+  
+  /* .axis-text-main{
+   text-anchor: middle;
+   font-size: 0.75em;
+  } */
+  
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    color: whitesmoke;
+    border-radius: 5px;
+    background-color: rgba(55, 55, 55, 0.75);
+    padding: 5px;
+  }

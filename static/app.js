@@ -83,6 +83,10 @@ d3.csv(csvPath, (error, healthData) => {
     let xValues = ['median_income', 'age_25_34', 'poverty', 'unemployed_greater_year'];
     let yValues = ['physically_active', 'binge_drink', 'smoke', 'own_home'];
 
+    // Create axes values lists
+    let xToolLabels = ['Income', 'Age', 'Poverty', 'Unemployed'];
+    let yToolLabels = ['Active', 'Binge Drink', 'Smoke', 'Own Home'];
+
     // Create axes labels lists
     let xLabels = ['Income (Median)', 'Age (25-34)', 'Poverty', 'Unemployed (>1 year)'];
     let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
@@ -92,7 +96,8 @@ d3.csv(csvPath, (error, healthData) => {
         $chartGroup.append('text')
             .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + spacer})`)
             .attr('class', 'axis-text x-axis-text')
-            .attr('value', xValues[i])
+            .attr('data-value', xValues[i])
+            .attr('data-tool', xToolLabels[i])
             .text(xLabels[i]);
     }
 
@@ -104,7 +109,8 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('x', 0 - (chartHeight / 2))
             .attr('dy', '1em')
             .attr('class', 'axis-text y-axis-text')
-            .attr('value', yValues[i])
+            .attr('data-value', yValues[i])
+            .attr('data-tool', yToolLabels[i])
             .text(yLabels[i]);
     }
 
@@ -115,16 +121,17 @@ d3.csv(csvPath, (error, healthData) => {
 
     // Create default plot
     function createDefault() {
-        // Initialize tooltip
-        let toolTip = d3.tip()
-            .attr("class", "tooltip")
-            .offset([0, -60])
-            .html(function (data) {
-                return (`<strong>${data.state}`)
-            });
+        // Set x and y axes text activity
+        $xAxisLabel.classed('inactive', true);
+        $yAxisLabel.classed('inactive', true);
 
-        // Create the tooltip in $chartGroup.
-        $chartGroup.call(toolTip);
+        d3.select(`.x-axis-text[data-value='median_income']`)
+            .classed('inactive', false)
+            .classed('active', true);
+
+        d3.select(`.y-axis-text[data-value='physically_active']`)
+            .classed('inactive', false)
+            .classed('active', true);
 
         let $circleGroup = $chartGroup.selectAll('circle');
 
@@ -135,38 +142,49 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('cx', data => xLinearScale(data.median_income))
             .attr('cy', data => yLinearScale(data.physically_active))
             .attr('r', '15')
-            .attr('fill', 'blue')
-            .attr('opacity', '0.7')
-            .on("mouseover", function (data) {
-                toolTip.show(data)
-            })
-            .on("mouseout", function (data) {
-                toolTip.hide(data)
-            });
+            .attr('fill', 'rgb(75, 133, 142)')
+            .attr('opacity', '0.8');
 
-        $xAxisLabel.classed('inactive', true);
-        $yAxisLabel.classed('inactive', true);
-
-        d3.select(`.x-axis-text[value='median_income']`)
-            .classed('inactive', false)
-            .classed('active', true);
-
-        d3.select(`.y-axis-text[value='physically_active']`)
-            .classed('inactive', false)
-            .classed('active', true);
-
-        // Display tooltip on 
-        //     $circleGroup
-        //         .on("mouseover", function (data) {
-        //             toolTip.show(data)
-        //         })
-        //         .on("mouseout", function (data) {
-        //             toolTip.hide(data)
-        //         });
+        updateTooltip();
     }
+
 
     // Generate default plot
     createDefault();
+
+
+    // updateTooltip function for tooltip
+    function updateTooltip() {
+        let $xActive = d3.selectAll('.x-axis-text')
+            .filter('.active');
+        let $xActiveTool = $xActive.attr('data-tool');
+        let $xActiveValue = $xActive.attr('data-value');
+
+        let $yActive = d3.selectAll('.y-axis-text')
+            .filter('.active');
+        let $yActiveTool = $yActive.attr('data-tool');
+        let $yActiveValue = $yActive.attr('data-value');
+
+        // Initialize tooltip
+        let toolTip = d3.tip()
+            .attr("class", "tooltip")
+            .offset([50, -70])
+            .html(data => {
+                return (`<strong>${data.state}<br>${$xActiveTool}: ${data[$xActiveValue]}
+                        <br>${$yActiveTool}: ${data[$yActiveValue]}</strong>`)
+            });
+
+        // Create the tooltip in $chartGroup.
+        $chartGroup.call(toolTip);
+
+        let $circleGroup = $chartGroup.selectAll('circle');
+
+        // Tooltip mouse events
+        $circleGroup
+            .on("mouseover", data => toolTip.show(data))
+            .on("mouseout", data => toolTip.hide(data));
+    }
+
 
     // Change x axis text activity
     $xAxisLabel.on('click', function () {
@@ -176,15 +194,15 @@ d3.csv(csvPath, (error, healthData) => {
             .classed('inactive', true);
 
         let $clickedField = d3.select(this);
-        let $clickedFieldValue = $clickedField.attr('value');
-        console.log($clickedFieldValue);
+        let $clickedFieldValue = $clickedField.attr('data-value');
 
         $clickedField
             .classed('inactive', false)
             .classed('active', true);
 
+        updateTooltip();
+
         xGetMinMax($clickedFieldValue);
-        console.log(xExtent);
 
         xLinearScale.domain(xExtent);
 
@@ -210,15 +228,15 @@ d3.csv(csvPath, (error, healthData) => {
             .classed('inactive', true);
 
         let $clickedField = d3.select(this);
-        let $clickedFieldValue = $clickedField.attr('value');
-        console.log($clickedFieldValue);
+        let $clickedFieldValue = $clickedField.attr('data-value');
 
         $clickedField
             .classed('inactive', false)
             .classed('active', true);
 
+        updateTooltip();
+
         yGetMinMax($clickedFieldValue);
-        console.log(yExtent);
 
         yLinearScale.domain(yExtent);
 
@@ -235,24 +253,4 @@ d3.csv(csvPath, (error, healthData) => {
             .duration(1000)
             .attr('cy', data => yLinearScale(data[$clickedFieldValue]));
     });
-
-
-    // function xTooltip() {
-    //     // Initialize tooltip
-    //     let toolTip = d3.tip()
-    //         .attr("class", "x-tooltip")
-    //         .offset([80, -60])
-    //         .html(data => {
-    //             return (`<strong>${data.state}<strong><hr>${data[$clickedFieldValue]}<br>`)
-    //         });
-
-    //     // Create the tooltip in $chartGroup.
-    //     $chartGroup.call(toolTip)
-
-    //     // Display tooltip on 
-    //     $circleGroup
-    //         .on("mouseover", data => toolTip.show(data))
-    //         .on("mouseout", data => toolTip.hide(data));
-    // }
-
 });
