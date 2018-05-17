@@ -16,7 +16,7 @@ let $svg = d3.select('#plot')
     .attr('width', svgWidth)
     .attr('height', svgHeight);
 
-let chartGroup = $svg.append('g')
+let $chartGroup = $svg.append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
 let csvPath = '../data/data.csv';
@@ -70,12 +70,12 @@ d3.csv(csvPath, (error, healthData) => {
     let leftAxis = d3.axisLeft(yLinearScale);
 
     // Generate axes groups
-    chartGroup.append('g')
+    $chartGroup.append('g')
         .attr('transform', `translate(0, ${chartHeight})`)
         .attr('id', 'x-axis')
         .call(bottomAxis);
 
-    chartGroup.append('g')
+    $chartGroup.append('g')
         .attr('id', 'y-axis')
         .call(leftAxis);
 
@@ -89,7 +89,7 @@ d3.csv(csvPath, (error, healthData) => {
 
     // Append x-axis labels
     for (let i = 0, ii = xLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
-        chartGroup.append('text')
+        $chartGroup.append('text')
             .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + spacer})`)
             .attr('class', 'axis-text x-axis-text')
             .attr('value', xValues[i])
@@ -98,7 +98,7 @@ d3.csv(csvPath, (error, healthData) => {
 
     // Append y-axis labels
     for (let i = 0, ii = yLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
-        chartGroup.append('text')
+        $chartGroup.append('text')
             .attr('transform', 'rotate(-90)')
             .attr('y', 0 - margin.left + 20 + spacer)
             .attr('x', 0 - (chartHeight / 2))
@@ -112,12 +112,21 @@ d3.csv(csvPath, (error, healthData) => {
     let $xAxisLabel = d3.selectAll('.x-axis-text').classed('inactive', true);
     let $yAxisLabel = d3.selectAll('.y-axis-text').classed('inactive', true);
 
+
     // Create default plot
     function createDefault() {
-        let $circleGroup = chartGroup.selectAll('circle')
+        // Initialize tooltip
+        let toolTip = d3.tip()
+            .attr("class", "tooltip")
+            .offset([0, -60])
+            .html(function (data) {
+                return (`<strong>${data.state}`)
+            });
 
-        // Remove all circles (if any)
-        // $circleGroup.remove()
+        // Create the tooltip in $chartGroup.
+        $chartGroup.call(toolTip);
+
+        let $circleGroup = $chartGroup.selectAll('circle');
 
         $circleGroup
             .data(healthData)
@@ -127,7 +136,13 @@ d3.csv(csvPath, (error, healthData) => {
             .attr('cy', data => yLinearScale(data.physically_active))
             .attr('r', '15')
             .attr('fill', 'blue')
-            .attr('opacity', '0.7');
+            .attr('opacity', '0.7')
+            .on("mouseover", function (data) {
+                toolTip.show(data)
+            })
+            .on("mouseout", function (data) {
+                toolTip.hide(data)
+            });
 
         $xAxisLabel.classed('inactive', true);
         $yAxisLabel.classed('inactive', true);
@@ -139,6 +154,15 @@ d3.csv(csvPath, (error, healthData) => {
         d3.select(`.y-axis-text[value='physically_active']`)
             .classed('inactive', false)
             .classed('active', true);
+
+        // Display tooltip on 
+        //     $circleGroup
+        //         .on("mouseover", function (data) {
+        //             toolTip.show(data)
+        //         })
+        //         .on("mouseout", function (data) {
+        //             toolTip.hide(data)
+        //         });
     }
 
     // Generate default plot
@@ -170,8 +194,7 @@ d3.csv(csvPath, (error, healthData) => {
             .ease(d3.easeElastic)
             .call(bottomAxis);
 
-
-        let $circleGroup = chartGroup.selectAll('circle');
+        let $circleGroup = $chartGroup.selectAll('circle');
 
         $circleGroup
             .transition()
@@ -205,12 +228,31 @@ d3.csv(csvPath, (error, healthData) => {
             .ease(d3.easeElastic)
             .call(leftAxis);
 
-        let $circleGroup = chartGroup.selectAll('circle');
+        let $circleGroup = $chartGroup.selectAll('circle');
 
         $circleGroup
             .transition()
             .duration(1000)
             .attr('cy', data => yLinearScale(data[$clickedFieldValue]));
     });
+
+
+    // function xTooltip() {
+    //     // Initialize tooltip
+    //     let toolTip = d3.tip()
+    //         .attr("class", "x-tooltip")
+    //         .offset([80, -60])
+    //         .html(data => {
+    //             return (`<strong>${data.state}<strong><hr>${data[$clickedFieldValue]}<br>`)
+    //         });
+
+    //     // Create the tooltip in $chartGroup.
+    //     $chartGroup.call(toolTip)
+
+    //     // Display tooltip on 
+    //     $circleGroup
+    //         .on("mouseover", data => toolTip.show(data))
+    //         .on("mouseout", data => toolTip.hide(data));
+    // }
 
 });
