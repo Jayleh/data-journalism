@@ -88,8 +88,8 @@ d3.json(url, (error, healthData) => {
     let yToolLabels = ['Active', 'Binge Drink', 'Smoke', 'Own Home'];
 
     // Create axes labels lists
-    let xLabels = ['Income (Median)', 'Age (25-34)', 'Poverty', 'Unemployed (>1 year)'];
-    let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
+    let xLabels = ['Income (Median)', 'Ages 25-34 (%)', 'In Poverty (%)', 'Unemployed >1 year (%)'];
+    let yLabels = ['Physically Active (%)', 'Binge Drink (%)', 'Smoke (%)', 'Own a Home (%)'];
 
     // Append a group for the x axis labels
     let $xTextGroup = $chartGroup.append('g');
@@ -286,4 +286,16 @@ d3.json(url, (error, healthData) => {
             .duration(1000)
             .attr('y', data => yLinearScale(data[$clickedFieldValue]));
     });
+});
+
+
+// Read table from route and insert to index page
+let corr_url = '/corr';
+
+d3.json(corr_url, (error, table) => {
+    if (error) throw error;
+
+    let $corrTable = d3.select('#corr-table');
+
+    $corrTable.html(table.corr_table);
 });
