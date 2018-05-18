@@ -91,9 +91,12 @@ d3.json(url, (error, healthData) => {
     let xLabels = ['Income (Median)', 'Age (25-34)', 'Poverty', 'Unemployed (>1 year)'];
     let yLabels = ['Physically Active', 'Binge Drink', 'Smoke', 'Own a Home'];
 
+    // Append a group for the x axis labels
+    let $xTextGroup = $chartGroup.append('g');
+
     // Append x-axis labels
     for (let i = 0, ii = xLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
-        $chartGroup.append('text')
+        $xTextGroup.append('text')
             .attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.top + spacer})`)
             .attr('class', 'axis-text x-axis-text')
             .attr('data-value', xValues[i])
@@ -101,9 +104,12 @@ d3.json(url, (error, healthData) => {
             .text(xLabels[i]);
     }
 
+    // Append a group for the y axis labels
+    let $yTextGroup = $chartGroup.append('g');
+
     // Append y-axis labels
     for (let i = 0, ii = yLabels.length, spacer = 0; i < ii; i++ , spacer += 20) {
-        $chartGroup.append('text')
+        $yTextGroup.append('text')
             .attr('transform', 'rotate(-90)')
             .attr('y', 0 - margin.left + 20 + spacer)
             .attr('x', 0 - (chartHeight / 2))
@@ -133,9 +139,10 @@ d3.json(url, (error, healthData) => {
             .classed('inactive', false)
             .classed('active', true);
 
-        let $circleGroup = $chartGroup.selectAll('circle');
+        // Create a group for the circles
+        let $circleGroup = $chartGroup.append('g');
 
-        $circleGroup
+        $circleGroup.selectAll('circle')
             .data(healthData)
             .enter()
             .append('circle')
@@ -143,17 +150,19 @@ d3.json(url, (error, healthData) => {
             .attr('cy', data => yLinearScale(data.physically_active))
             .attr('r', '15')
             .attr('fill', 'rgb(75, 133, 142)')
-            .attr('opacity', '0.8');
+            .attr('opacity', '0.9');
 
-        // let $circleTextGroup = $chartGroup.selectAll('text');
+        // Create a group for the text in each circle
+        let $circleTextGroup = $chartGroup.append('g');
 
-        // $circleTextGroup
-        //     .data(healthData)
-        //     .enter()
-        //     .append('text')
-        //     .attr('x', data => xLinearScale(data.median_income))
-        //     .attr('y', data => yLinearScale(data.physically_active))
-        //     .text(data => data.abbrev);
+        $circleTextGroup.selectAll('text')
+            .data(healthData)
+            .enter()
+            .append('text')
+            .attr('x', data => xLinearScale(data.median_income))
+            .attr('y', data => yLinearScale(data.physically_active))
+            .classed('state-abbrev', true)
+            .text(data => data.abbrev);
 
         updateTooltip();
     }
@@ -228,6 +237,13 @@ d3.json(url, (error, healthData) => {
             .transition()
             .duration(1000)
             .attr('cx', data => xLinearScale(data[$clickedFieldValue]));
+
+        let $circleTextGroup = $chartGroup.selectAll('.state-abbrev');
+
+        $circleTextGroup
+            .transition()
+            .duration(1000)
+            .attr('x', data => xLinearScale(data[$clickedFieldValue]));
     });
 
     // Change y axis text activity
@@ -262,5 +278,12 @@ d3.json(url, (error, healthData) => {
             .transition()
             .duration(1000)
             .attr('cy', data => yLinearScale(data[$clickedFieldValue]));
+
+        let $circleTextGroup = $chartGroup.selectAll('.state-abbrev');
+
+        $circleTextGroup
+            .transition()
+            .duration(1000)
+            .attr('y', data => yLinearScale(data[$clickedFieldValue]));
     });
 });

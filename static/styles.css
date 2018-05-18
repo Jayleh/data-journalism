@@ -38,6 +38,13 @@ body{
  font-size: 0.75em;
 } */
 
+.state-abbrev {
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: whitesmoke;
+}
+
 .tooltip {
   position: absolute;
   text-align: center;
