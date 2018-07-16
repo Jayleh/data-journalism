@@ -1,7 +1,6 @@
-from flask import Flask, render_template, jsonify
+from risk import app
+from flask import render_template, jsonify
 import pandas as pd
-
-app = Flask(__name__)
 
 
 @app.route("/")
@@ -12,7 +11,7 @@ def home():
 @app.route("/data")
 def data():
 
-    df = pd.read_csv("data/data.csv")
+    df = pd.read_csv("risk/data/data.csv")
 
     return jsonify(df.to_dict(orient="records"))
 
@@ -20,7 +19,7 @@ def data():
 @app.route("/corr")
 def corr():
 
-    df = pd.read_csv("data/data.csv")
+    df = pd.read_csv("risk/data/data.csv")
 
     # Correlation matrix
     corr_matrix = df.corr()
@@ -39,7 +38,3 @@ def corr():
     corr_dict["corr_table"] = corr_html
 
     return jsonify(corr_dict)
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
